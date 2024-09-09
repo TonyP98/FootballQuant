@@ -3,47 +3,40 @@ import os
 import shutil
 import zipfile
 
-# Definisci la directory dove saranno salvati i file
+# Definisci la directory per la libreria virtuale
 FILE_DIRECTORY = 'file_library'
 os.makedirs(FILE_DIRECTORY, exist_ok=True)
 
-st.title("Libreria Virtuale - Caricamento di Cartelle ed Eliminazione File/Cartelle")
+st.title("Libreria Virtuale - Caricamento e Gestione di File")
 
 # Funzione per visualizzare la lista dei file e cartelle nella directory
 def list_files_and_folders(directory):
     items = os.listdir(directory)
     return items
 
-# Funzione per eliminare file
-def delete_file(file_name):
-    file_path = os.path.join(FILE_DIRECTORY, file_name)
-    if os.path.isfile(file_path):
-        os.remove(file_path)
-        st.success(f"File '{file_name}' eliminato con successo!")
-    else:
-        st.error(f"'{file_name}' non è un file valido!")
-
-# Funzione per eliminare cartella e il suo contenuto
-def delete_folder(folder_name):
-    folder_path = os.path.join(FILE_DIRECTORY, folder_name)
-    if os.path.isdir(folder_path):
-        shutil.rmtree(folder_path)
-        st.success(f"Cartella '{folder_name}' eliminata con successo!")
-    else:
-        st.error(f"'{folder_name}' non è una cartella valida!")
-
-# Caricamento file ZIP
-uploaded_zip = st.file_uploader("Carica una cartella compressa (.zip) nella libreria virtuale", type=["zip"])
-
-# Se il file ZIP è stato caricato, estrai tutto nella directory
-if uploaded_zip:
+# Funzione per caricare file ZIP
+def upload_zip_file(uploaded_zip):
     with zipfile.ZipFile(uploaded_zip, 'r') as zip_ref:
         zip_ref.extractall(FILE_DIRECTORY)
-    st.success(f"Cartella '{uploaded_zip.name}' estratta con successo nella libreria virtuale!")
+    st.success(f"File ZIP '{uploaded_zip.name}' estratto con successo nella libreria virtuale!")
 
-# Elimina file o cartella
-st.subheader("Elimina file o cartella dalla libreria")
+# Carica un file ZIP
+uploaded_zip = st.file_uploader("Carica un file ZIP (.zip) nella libreria virtuale", type=["zip"])
+
+if uploaded_zip:
+    upload_zip_file(uploaded_zip)
+
+# Mostra i file e le cartelle nella libreria
+st.subheader("File e Cartelle nella Libreria Virtuale")
 existing_items = list_files_and_folders(FILE_DIRECTORY)
+
+if existing_items:
+    st.write(existing_items)
+else:
+    st.info("Nessun file o cartella presente nella libreria.")
+
+# Opzioni per eliminare file o cartelle
+st.subheader("Elimina file o cartella dalla libreria")
 
 if existing_items:
     item_to_delete = st.selectbox("Seleziona un file o una cartella da eliminare", existing_items)
@@ -52,14 +45,14 @@ if existing_items:
         item_path = os.path.join(FILE_DIRECTORY, item_to_delete)
         
         if os.path.isfile(item_path):
-            delete_file(item_to_delete)
+            os.remove(item_path)
+            st.success(f"File '{item_to_delete}' eliminato con successo!")
         elif os.path.isdir(item_path):
-            delete_folder(item_to_delete)
+            shutil.rmtree(item_path)
+            st.success(f"Cartella '{item_to_delete}' eliminata con successo!")
         
-        # Aggiorna manualmente la lista degli elementi eliminati
+        # Ricarica la lista aggiornata degli elementi
         existing_items = list_files_and_folders(FILE_DIRECTORY)
-        if existing_items:
-            st.selectbox("Aggiornato: seleziona un altro file o cartella da eliminare", existing_items)
+        st.write(existing_items)
 else:
     st.info("Nessun file o cartella disponibile per l'eliminazione.")
-
