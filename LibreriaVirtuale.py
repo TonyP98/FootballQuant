@@ -4,7 +4,7 @@ import shutil
 import zipfile
 
 # Definisci la directory per la libreria virtuale
-FILE_DIRECTORY = 'file_library'
+FILE_DIRECTORY = 'footballquant_library'
 os.makedirs(FILE_DIRECTORY, exist_ok=True)
 
 st.title("Libreria Virtuale - Caricamento e Gestione di File")
