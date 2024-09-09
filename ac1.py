@@ -227,7 +227,7 @@ def plot_consecutive_histogram(consecutive_counts, label, title):
     return fig
 
 # Carica la libreria virtuale
-FILE_DIRECTORY = 'file_library'
+FILE_DIRECTORY = "C:\Users\Utente\file_library"
 file_names = [f for f in os.listdir(FILE_DIRECTORY) if f.endswith('.xlsx')]
 
 # Seleziona il file dalla libreria
