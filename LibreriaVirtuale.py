@@ -1,59 +1,58 @@
 import streamlit as st
 import os
+import shutil
+import zipfile
 
 # Definisci la directory per la libreria virtuale
-FILE_DIRECTORY = 'footballquant_library'
+FILE_DIRECTORY = 'file_library'
+os.makedirs(FILE_DIRECTORY, exist_ok=True)
 
-# Funzione per verificare e creare la directory se non esiste
-def ensure_directory_exists(directory):
-    if not os.path.exists(directory):
-        try:
-            os.makedirs(directory)
-            st.write(f"Directory '{directory}' creata con successo.")
-        except Exception as e:
-            st.error(f"Errore nella creazione della directory '{directory}': {e}")
+st.title("Libreria Virtuale - Caricamento e Gestione di File")
 
-# Assicurati che la directory esista
-ensure_directory_exists(FILE_DIRECTORY)
+# Funzione per visualizzare la lista dei file e cartelle nella directory
+def list_files_and_folders(directory):
+    items = os.listdir(directory)
+    return items
 
-st.title("Gestione dei File nella Libreria Virtuale")
+# Funzione per caricare file ZIP
+def upload_zip_file(uploaded_zip):
+    with zipfile.ZipFile(uploaded_zip, 'r') as zip_ref:
+        zip_ref.extractall(FILE_DIRECTORY)
+    st.success(f"File ZIP '{uploaded_zip.name}' estratto con successo nella libreria virtuale!")
 
-# Funzione per visualizzare la lista dei file nella directory
-def list_files(directory):
-    try:
-        if os.path.exists(directory):
-            return [f for f in os.listdir(directory) if f.endswith('.xlsx')]
-        else:
-            st.error(f"La directory '{directory}' non esiste.")
-            return []
-    except Exception as e:
-        st.error(f"Errore nella lettura della directory '{directory}': {e}")
-        return []
+# Carica un file ZIP
+uploaded_zip = st.file_uploader("Carica un file ZIP (.zip) nella libreria virtuale", type=["zip"])
 
-# Mostra i file nella libreria virtuale
-file_names = list_files(FILE_DIRECTORY)
+if uploaded_zip:
+    upload_zip_file(uploaded_zip)
 
-if file_names:
-    st.write("File disponibili:")
-    st.write(file_names)
+# Mostra i file e le cartelle nella libreria
+st.subheader("File e Cartelle nella Libreria Virtuale")
+existing_items = list_files_and_folders(FILE_DIRECTORY)
+
+if existing_items:
+    st.write(existing_items)
 else:
-    st.info("Nessun file .xlsx disponibile nella libreria virtuale.")
+    st.info("Nessun file o cartella presente nella libreria.")
 
-# Opzioni per eliminare file
-st.subheader("Elimina un file dalla libreria")
+# Opzioni per eliminare file o cartelle
+st.subheader("Elimina file o cartella dalla libreria")
 
-if file_names:
-    file_to_delete = st.selectbox("Seleziona un file da eliminare", file_names)
+if existing_items:
+    item_to_delete = st.selectbox("Seleziona un file o una cartella da eliminare", existing_items)
     
     if st.button("Elimina"):
-        file_path = os.path.join(FILE_DIRECTORY, file_to_delete)
-        try:
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-                st.success(f"File '{file_to_delete}' eliminato con successo!")
-            else:
-                st.error(f"Impossibile trovare il file '{file_to_delete}'.")
-        except Exception as e:
-            st.error(f"Errore nell'eliminazione del file '{file_to_delete}': {e}")
+        item_path = os.path.join(FILE_DIRECTORY, item_to_delete)
+        
+        if os.path.isfile(item_path):
+            os.remove(item_path)
+            st.success(f"File '{item_to_delete}' eliminato con successo!")
+        elif os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+            st.success(f"Cartella '{item_to_delete}' eliminata con successo!")
+        
+        # Ricarica la lista aggiornata degli elementi
+        existing_items = list_files_and_folders(FILE_DIRECTORY)
+        st.write(existing_items)
 else:
-    st.info("Nessun file disponibile per l'eliminazione.")
+    st.info("Nessun file o cartella disponibile per l'eliminazione.")
